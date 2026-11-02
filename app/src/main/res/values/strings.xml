@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">Sound Reminder</string>
+    <string name="default_title">Reminder</string>
+
+    <!-- List -->
+    <string name="add_reminder">Add reminder</string>
+    <string name="empty_list">No reminders yet.\nTap + to add one.</string>
+    <string name="next_ring">Next: %1$s</string>
+    <string name="snoozed_until">Snoozed until %1$s</string>
+    <string name="off">Off</string>
+    <string name="delete">Delete</string>
+    <string name="delete_title">Delete reminder?</string>
+    <string name="delete_message">\"%1$s\" will be removed.</string>
+    <string name="ringing_banner">\"%1$s\" is ringing</string>
+    <string name="open">Open</string>
+    <string name="allow">Allow</string>
+    <string name="permission_notifications">Allow notifications so reminders can ring.</string>
+    <string name="permission_exact_alarm">Allow alarms so reminders ring on time.</string>
+    <string name="permission_full_screen">Allow full-screen alerts so reminders show over the lock screen.</string>
+
+    <!-- Editor -->
+    <string name="new_reminder">New reminder</string>
+    <string name="edit_reminder">Edit reminder</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="title_label">Title</string>
+    <string name="title_placeholder">e.g. Take medicine</string>
+    <string name="date_and_time">Date and time</string>
+    <string name="repeat">Repeat</string>
+    <string name="repeat_once">Once</string>
+    <string name="repeat_daily">Daily</string>
+    <string name="repeat_weekly">Weekly</string>
+    <string name="repeat_monthly">Monthly</string>
+    <string name="repeat_every_x_days">Every X days</string>
+    <string name="interval_label">Repeat every</string>
+    <string name="days">days</string>
+    <string name="sound">Sound</string>
+    <string name="default_sound">Default alarm sound</string>
+    <string name="custom_sound">Custom sound</string>
+    <string name="change">Change</string>
+    <string name="error_interval">Enter a number of days from 1 to 365.</string>
+    <string name="error_past_time">Pick a time in the future.</string>
+
+    <string name="repeat_daily_label">Every day</string>
+    <string name="repeat_weekly_label">Every week on %1$s</string>
+    <string name="repeat_monthly_label">Every month on day %1$d</string>
+    <plurals name="repeat_every_x_days_label">
+        <item quantity="one">Every day</item>
+        <item quantity="other">Every %1$d days</item>
+    </plurals>
+
+    <!-- Ringing -->
+    <string name="channel_name">Ringing reminders</string>
+    <string name="channel_description">Shown while a reminder is ringing</string>
+    <string name="ringing_text">Tap for snooze options</string>
+    <string name="stop">Stop</string>
+    <string name="snooze_5m">Snooze 5 min</string>
+    <string name="snooze_1h">Snooze 1 hr</string>
+    <string name="snooze_for">Snooze for</string>
+    <string name="minutes_5">5 min</string>
+    <string name="hour_1">1 hour</string>
+    <string name="hours_6">6 hours</string>
+</resources>

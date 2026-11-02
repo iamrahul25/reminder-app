@@ -1,0 +1,30 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Signing secrets
+keystore.properties
+*.jks
+*.keystore
+
+# Build outputs produced by app.py
+/release/
+*.apk
+*.aab
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
