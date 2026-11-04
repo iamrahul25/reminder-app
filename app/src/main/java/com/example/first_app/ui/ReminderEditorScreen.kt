@@ -9,26 +9,36 @@ import android.net.Uri
 import android.text.format.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
@@ -47,9 +57,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.first_app.R
 import com.example.first_app.reminder.Reminder
@@ -60,7 +71,7 @@ import java.util.TimeZone
 
 private val UTC = TimeZone.getTimeZone("UTC")
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ReminderEditorScreen(
     initial: Reminder?,
@@ -106,10 +117,15 @@ fun ReminderEditorScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(if (initial == null) R.string.new_reminder else R.string.edit_reminder)) },
-                navigationIcon = { TextButton(onClick = onCancel) { Text(stringResource(R.string.cancel)) } },
+                navigationIcon = {
+                    IconButton(onClick = onCancel) {
+                        Icon(painterResource(R.drawable.ic_close), contentDescription = stringResource(R.string.close))
+                    }
+                },
                 actions = {
-                    TextButton(
+                    Button(
                         enabled = error == null,
+                        modifier = Modifier.padding(end = 12.dp),
                         onClick = {
                             onSave(
                                 Reminder(
@@ -120,6 +136,7 @@ fun ReminderEditorScreen(
                                     intervalDays = if (repeat == Repeat.EVERY_X_DAYS) interval ?: 1 else 1,
                                     enabled = true,
                                     soundUri = soundUri,
+                                    createdAt = initial?.createdAt ?: 0,
                                 ),
                             )
                         },
@@ -134,7 +151,7 @@ fun ReminderEditorScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             OutlinedTextField(
                 value = title,
@@ -142,81 +159,98 @@ fun ReminderEditorScreen(
                 label = { Text(stringResource(R.string.title_label)) },
                 placeholder = { Text(stringResource(R.string.title_placeholder)) },
                 singleLine = true,
+                shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth(),
             )
 
-            SectionLabel(stringResource(R.string.date_and_time))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { showDatePicker = true }, modifier = Modifier.weight(1f)) {
-                    Text(formatDate(dateTime))
-                }
-                OutlinedButton(onClick = { showTimePicker = true }, modifier = Modifier.weight(1f)) {
-                    Text(formatTime(dateTime))
-                }
-            }
-
-            SectionLabel(stringResource(R.string.repeat))
-            Column(modifier = Modifier.selectableGroup()) {
-                listOf(
-                    Repeat.NONE to R.string.repeat_once,
-                    Repeat.DAILY to R.string.repeat_daily,
-                    Repeat.WEEKLY to R.string.repeat_weekly,
-                    Repeat.MONTHLY to R.string.repeat_monthly,
-                    Repeat.EVERY_X_DAYS to R.string.repeat_every_x_days,
-                ).forEach { (option, label) ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .selectable(
-                                selected = repeat == option,
-                                onClick = { repeat = option },
-                                role = Role.RadioButton,
-                            ),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(selected = repeat == option, onClick = null)
-                        Text(stringResource(label), modifier = Modifier.padding(start = 12.dp))
+            SectionCard(icon = R.drawable.ic_calendar, title = stringResource(R.string.date_and_time)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    PickerButton(R.drawable.ic_calendar, formatDate(dateTime), Modifier.weight(1f)) {
+                        showDatePicker = true
+                    }
+                    PickerButton(R.drawable.ic_schedule, formatTime(dateTime), Modifier.weight(1f)) {
+                        showTimePicker = true
                     }
                 }
             }
-            if (repeat == Repeat.EVERY_X_DAYS) {
-                OutlinedTextField(
-                    value = intervalText,
-                    onValueChange = { text -> intervalText = text.filter(Char::isDigit).take(3) },
-                    label = { Text(stringResource(R.string.interval_label)) },
-                    suffix = { Text(stringResource(R.string.days)) },
-                    singleLine = true,
-                    isError = !intervalValid,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+
+            SectionCard(icon = R.drawable.ic_repeat, title = stringResource(R.string.repeat)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        Repeat.NONE to R.string.repeat_once,
+                        Repeat.DAILY to R.string.repeat_daily,
+                        Repeat.WEEKLY to R.string.repeat_weekly,
+                        Repeat.MONTHLY to R.string.repeat_monthly,
+                        Repeat.EVERY_X_DAYS to R.string.repeat_every_x_days,
+                    ).forEach { (option, label) ->
+                        FilterChip(
+                            selected = repeat == option,
+                            onClick = { repeat = option },
+                            label = { Text(stringResource(label)) },
+                            leadingIcon = if (repeat == option) {
+                                {
+                                    Icon(
+                                        painterResource(R.drawable.ic_check),
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                }
+                            } else {
+                                null
+                            },
+                        )
+                    }
+                }
+                if (repeat == Repeat.EVERY_X_DAYS) {
+                    OutlinedTextField(
+                        value = intervalText,
+                        onValueChange = { text -> intervalText = text.filter(Char::isDigit).take(3) },
+                        label = { Text(stringResource(R.string.interval_label)) },
+                        suffix = { Text(stringResource(R.string.days)) },
+                        singleLine = true,
+                        isError = !intervalValid,
+                        shape = MaterialTheme.shapes.medium,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
+
+            SectionCard(icon = R.drawable.ic_music_note, title = stringResource(R.string.sound)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = soundName(context, soundUri),
+                        modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    TextButton(onClick = {
+                        val defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
+                        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
+                            .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
+                            .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
+                            .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                            .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, defaultUri)
+                            .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, soundUri?.let(Uri::parse) ?: defaultUri)
+                        try {
+                            soundPicker.launch(intent)
+                        } catch (_: ActivityNotFoundException) {
+                            soundUri = null
+                        }
+                    }) { Text(stringResource(R.string.change)) }
+                }
+            }
+
+            NextRingCard(text = error ?: stringResource(R.string.next_ring, formatDateTime(next!!)), isError = error != null)
+
+            if (initial != null && initial.createdAt > 0) {
+                Text(
+                    text = stringResource(R.string.created_on, formatDateTime(initial.createdAt)),
                     modifier = Modifier.fillMaxWidth(),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
                 )
             }
-
-            SectionLabel(stringResource(R.string.sound))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(soundName(context, soundUri), modifier = Modifier.weight(1f))
-                TextButton(onClick = {
-                    val defaultUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-                    val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_ALARM)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, true)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI, defaultUri)
-                        .putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, soundUri?.let(Uri::parse) ?: defaultUri)
-                    try {
-                        soundPicker.launch(intent)
-                    } catch (_: ActivityNotFoundException) {
-                        soundUri = null
-                    }
-                }) { Text(stringResource(R.string.change)) }
-            }
-
-            Text(
-                text = error ?: stringResource(R.string.next_ring, formatDateTime(next!!)),
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (error != null) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
-            )
         }
     }
 
@@ -268,8 +302,57 @@ fun ReminderEditorScreen(
 }
 
 @Composable
-private fun SectionLabel(text: String) {
-    Text(text, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+private fun SectionCard(@DrawableRes icon: Int, title: String, content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    ) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painterResource(icon),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(title, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            }
+            content()
+        }
+    }
+}
+
+@Composable
+private fun PickerButton(@DrawableRes icon: Int, text: String, modifier: Modifier, onClick: () -> Unit) {
+    FilledTonalButton(onClick = onClick, modifier = modifier.height(52.dp), shape = MaterialTheme.shapes.medium) {
+        Icon(painterResource(icon), contentDescription = null, modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(8.dp))
+        Text(text, maxLines = 1)
+    }
+}
+
+@Composable
+private fun NextRingCard(text: String, isError: Boolean) {
+    val colors = MaterialTheme.colorScheme
+    val container = if (isError) colors.errorContainer else colors.primaryContainer
+    val content = if (isError) colors.onErrorContainer else colors.onPrimaryContainer
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = container, contentColor = content),
+    ) {
+        Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                painterResource(if (isError) R.drawable.ic_info else R.drawable.ic_alarm),
+                contentDescription = null,
+                modifier = Modifier.size(22.dp),
+            )
+            Spacer(Modifier.width(12.dp))
+            Text(text, style = MaterialTheme.typography.bodyLarge)
+        }
+    }
 }
 
 @Composable

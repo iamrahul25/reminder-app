@@ -66,6 +66,8 @@ fun ReminderApp(resumeTick: Int) {
                     ReminderScheduler.setEnabled(context, reminder.id, enabled)
                 }
             },
+            onComplete = { ReminderScheduler.markCompleted(context, it.id) },
+            onRestore = { reminder, enabled -> ReminderScheduler.restore(context, reminder.id, enabled) },
             onDelete = { ReminderScheduler.delete(context, it.id) },
         )
     } else {

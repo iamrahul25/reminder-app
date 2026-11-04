@@ -20,9 +20,31 @@ data class Reminder(
     val snoozeUntil: Long = 0,
     /** Ringtone URI string, or null for the device's default alarm sound. */
     val soundUri: String? = null,
-)
+    /** When the reminder was first saved; 0 until the repository assigns it. */
+    val createdAt: Long = 0,
+    /** When the reminder was marked as completed, or 0 while it is still active. */
+    val completedAt: Long = 0,
+) {
+    val isCompleted: Boolean get() = completedAt > 0
+}
 
 private const val DAY_MS = 24L * 60 * 60 * 1000
+
+/**
+ * Number of calendar days between the local dates of [from] and [to] (0 when both fall on the
+ * same day). Counting dates rather than 24-hour spans keeps the result stable across DST changes.
+ */
+fun daysBetween(from: Long, to: Long, timeZone: TimeZone = TimeZone.getDefault()): Int {
+    fun startOfDay(millis: Long) = Calendar.getInstance(timeZone).apply {
+        timeInMillis = millis
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }.timeInMillis
+    val days = Math.round((startOfDay(to) - startOfDay(from)).toDouble() / DAY_MS).toInt()
+    return days.coerceAtLeast(0)
+}
 
 /**
  * Returns the first occurrence of a reminder strictly after [after], or null when a one-time

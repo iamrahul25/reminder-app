@@ -38,6 +38,28 @@ object ReminderScheduler {
         if (AlarmService.ringing.value?.reminderId == id) AlarmService.stop(context)
     }
 
+    /** Moves a reminder to the Done section and silences any pending or ringing alarm for it. */
+    fun markCompleted(context: Context, id: Int) {
+        val reminder = ReminderRepository.get(id) ?: return
+        cancelAlarm(context, id, snooze = false)
+        cancelAlarm(context, id, snooze = true)
+        ReminderRepository.upsert(
+            reminder.copy(enabled = false, nextAt = 0, snoozeUntil = 0, completedAt = System.currentTimeMillis()),
+        )
+        if (AlarmService.ringing.value?.reminderId == id) AlarmService.stop(context)
+    }
+
+    /** Moves a completed reminder back to the active list, rescheduling it when [enabled]. */
+    fun restore(context: Context, id: Int, enabled: Boolean = true) {
+        val reminder = ReminderRepository.get(id) ?: return
+        val reopened = reminder.copy(completedAt = 0)
+        if (enabled) {
+            save(context, reopened.copy(enabled = true))
+        } else {
+            ReminderRepository.upsert(reopened)
+        }
+    }
+
     fun snooze(context: Context, id: Int, minutes: Int) {
         val reminder = ReminderRepository.get(id) ?: return
         val at = System.currentTimeMillis() + minutes * 60_000L

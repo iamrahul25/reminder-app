@@ -21,7 +21,15 @@ object ReminderRepository {
     fun init(context: Context) {
         if (::prefs.isInitialized) return
         prefs = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
-        _reminders.value = load()
+        val loaded = load()
+        if (loaded.any { it.createdAt == 0L }) {
+            // Reminders saved before creation dates were tracked: the first ring time is the
+            // closest known bound, as reminders are always created before they first ring.
+            val now = System.currentTimeMillis()
+            persist(loaded.map { if (it.createdAt == 0L) it.copy(createdAt = minOf(it.startAt, now)) else it })
+        } else {
+            _reminders.value = loaded
+        }
     }
 
     fun get(id: Int): Reminder? = _reminders.value.firstOrNull { it.id == id }
@@ -29,7 +37,8 @@ object ReminderRepository {
     /** Inserts or replaces a reminder; a reminder with id 0 gets a new id. Returns the saved copy. */
     @Synchronized
     fun upsert(reminder: Reminder): Reminder {
-        val saved = if (reminder.id == 0) reminder.copy(id = allocateId()) else reminder
+        val withId = if (reminder.id == 0) reminder.copy(id = allocateId()) else reminder
+        val saved = if (withId.createdAt == 0L) withId.copy(createdAt = System.currentTimeMillis()) else withId
         val list = _reminders.value.filterNot { it.id == saved.id } + saved
         persist(list.sortedBy { it.startAt })
         return saved
@@ -71,6 +80,8 @@ object ReminderRepository {
         .put("nextAt", nextAt)
         .put("snoozeUntil", snoozeUntil)
         .put("soundUri", soundUri ?: JSONObject.NULL)
+        .put("createdAt", createdAt)
+        .put("completedAt", completedAt)
 
     private fun JSONObject.toReminder() = Reminder(
         id = getInt("id"),
@@ -82,5 +93,7 @@ object ReminderRepository {
         nextAt = optLong("nextAt", 0),
         snoozeUntil = optLong("snoozeUntil", 0),
         soundUri = if (isNull("soundUri")) null else optString("soundUri"),
+        createdAt = optLong("createdAt", 0),
+        completedAt = optLong("completedAt", 0),
     )
 }

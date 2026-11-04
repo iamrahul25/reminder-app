@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -38,6 +39,7 @@ import com.example.first_app.R
 import com.example.first_app.reminder.ReminderScheduler
 import com.example.first_app.ui.formatTime
 import com.example.first_app.ui.theme.FirstAppTheme
+import com.example.first_app.ui.theme.appColors
 
 /** Shown over the lock screen while a reminder rings. */
 class AlarmActivity : ComponentActivity() {
@@ -64,6 +66,7 @@ class AlarmActivity : ComponentActivity() {
                     AlarmScreen(
                         ringing = current,
                         onStop = { AlarmService.stop(this) },
+                        onComplete = { ReminderScheduler.markCompleted(this, current.reminderId) },
                         onSnooze = { minutes ->
                             ReminderScheduler.snooze(this, current.reminderId, minutes)
                             AlarmService.stop(this)
@@ -76,7 +79,12 @@ class AlarmActivity : ComponentActivity() {
 }
 
 @Composable
-private fun AlarmScreen(ringing: Ringing, onStop: () -> Unit, onSnooze: (minutes: Int) -> Unit) {
+private fun AlarmScreen(
+    ringing: Ringing,
+    onStop: () -> Unit,
+    onComplete: () -> Unit,
+    onSnooze: (minutes: Int) -> Unit,
+) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.primaryContainer) {
         Column(
             modifier = Modifier
@@ -112,6 +120,21 @@ private fun AlarmScreen(ringing: Ringing, onStop: () -> Unit, onSnooze: (minutes
                     .height(64.dp),
             ) {
                 Text(stringResource(R.string.stop), style = MaterialTheme.typography.titleLarge)
+            }
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = onComplete,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.appColors.success,
+                    contentColor = MaterialTheme.appColors.onSuccess,
+                ),
+            ) {
+                Icon(painterResource(R.drawable.ic_check), contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.mark_completed), style = MaterialTheme.typography.titleMedium)
             }
             Spacer(Modifier.height(24.dp))
             Text(

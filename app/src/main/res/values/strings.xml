@@ -17,6 +17,41 @@
     <string name="permission_notifications">Allow notifications so reminders can ring.</string>
     <string name="permission_exact_alarm">Allow alarms so reminders ring on time.</string>
     <string name="permission_full_screen">Allow full-screen alerts so reminders show over the lock screen.</string>
+    <string name="tab_active">Active</string>
+    <string name="tab_done">Done</string>
+    <string name="tab_with_count">%1$s · %2$d</string>
+    <string name="list_subtitle">%1$d active · %2$d done</string>
+    <string name="empty_active_title">You\'re all caught up</string>
+    <string name="empty_active_body">Tap New reminder to schedule your next one.</string>
+    <string name="empty_done_title">Nothing completed yet</string>
+    <string name="empty_done_body">Reminders you mark as completed show up here, along with how many days each one took.</string>
+    <string name="mark_completed">Mark as completed</string>
+    <string name="marked_completed">\"%1$s\" moved to Done</string>
+    <string name="undo">Undo</string>
+    <string name="restore">Restore</string>
+    <string name="created_on">Created %1$s</string>
+    <string name="completed_on">Completed %1$s</string>
+    <string name="created_today">Added today</string>
+    <plurals name="open_for_days">
+        <item quantity="one">Open %1$d day</item>
+        <item quantity="other">Open %1$d days</item>
+    </plurals>
+    <string name="done_same_day">Done same day</string>
+    <plurals name="done_in_days">
+        <item quantity="one">Done in %1$d day</item>
+        <item quantity="other">Done in %1$d days</item>
+    </plurals>
+    <string name="stat_completed">Completed</string>
+    <string name="stat_average">Avg. days</string>
+    <string name="stat_fastest">Fastest</string>
+    <string name="stat_days_value">%1$sd</string>
+    <string name="speed_title">Your speed</string>
+
+    <!-- Theme -->
+    <string name="theme">Theme</string>
+    <string name="theme_system">System default</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
 
     <!-- Editor -->
     <string name="new_reminder">New reminder</string>
@@ -41,6 +76,7 @@
     <string name="change">Change</string>
     <string name="error_interval">Enter a number of days from 1 to 365.</string>
     <string name="error_past_time">Pick a time in the future.</string>
+    <string name="close">Close</string>
 
     <string name="repeat_daily_label">Every day</string>
     <string name="repeat_weekly_label">Every week on %1$s</string>
